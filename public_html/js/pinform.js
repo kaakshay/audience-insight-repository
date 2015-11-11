@@ -485,12 +485,63 @@ PIN.Form.build = function(queryData, renderArgs) {
         previewAttribute = '';
     }
 
-    // add submit listener, return false to avoid html form submission.
-    formEl.append('<script src="./mpform.js" type="text/javascript"></script>');
-
     // insert the form
     //console.log('insert:', wrapper, formEl);
     wrapper.append(formEl);
+
+    //Next and previous button script
+    var script = document.createElement('script');
+    script.innerHTML = 'var pin_mpf_current_fs, pin_mpf_next_fs, pin_mpf_previous_fs;\
+    var pin_mpf_left, pin_mpf_opacity, pin_mpf_scale; \
+    var pin_mpf_animating; \
+    $(".pin-mpf-next").click(function(){\
+        pin_mpf_current_fs = $(this).parents("fieldset");\
+        pin_mpf_next_fs = pin_mpf_current_fs.next(); \
+        var pin_mpf_valid = PIN.Form.validatePage(pin_mpf_current_fs.find(".pin-mpf-q-div").attr(\'id\'));\
+        if(pin_mpf_valid){\
+            if(pin_mpf_animating) return false;\
+            pin_mpf_animating = true;\
+            pin_mpf_current_fs.animate({opacity: 0}, {\
+                step: function(now, mx) {\
+                    pin_mpf_scale = 1 - (1 - now) * 0.2;\
+                    pin_mpf_left = (now * 50)+"%";\
+                    pin_mpf_opacity = 1 - now;\
+                    pin_mpf_current_fs.css({\'transform\': \'scale(\'+pin_mpf_scale+\')\'});\
+                    pin_mpf_next_fs.css({\'left\': pin_mpf_left, \'opacity\': pin_mpf_opacity});\
+                }, \
+                duration: 800, \
+                complete: function(){\
+                    pin_mpf_current_fs.hide();\
+                    pin_mpf_animating = false;\
+                }, \
+                easing: \'easeInOutBack\'\
+            });\
+            pin_mpf_next_fs.show(); \
+        } \
+    }); \
+    $(".pin-mpf-previous").click(function(){\
+        if(pin_mpf_animating) return false;\
+        pin_mpf_animating = true;\
+        pin_mpf_current_fs = $(this).parents("fieldset");\
+        pin_mpf_previous_fs = pin_mpf_current_fs.prev(); \
+        pin_mpf_current_fs.animate({opacity: 0}, {\
+            step: function(now, mx) {\
+                pin_mpf_scale = 0.8 + (1 - now) * 0.2;\
+                pin_mpf_left = ((1-now) * 50)+"%";\
+                pin_mpf_opacity = 1 - now;\
+                pin_mpf_current_fs.css({\'left\': pin_mpf_left});\
+                pin_mpf_previous_fs.css({\'transform\': \'scale(\'+pin_mpf_scale+\')\', \'opacity\': pin_mpf_opacity});\
+            }, \
+            duration: 800, \
+            complete: function(){\
+                pin_mpf_current_fs.hide();\
+                pin_mpf_animating = false;\
+            }, \
+            easing: \'easeInOutBack\'\
+        });\
+        pin_mpf_previous_fs.show(); \
+    });';
+    wrapper.append(script);
 
     wrapper.append('<div class="pin-query-ending">'+(queryData.query.inq_ending_para||'')+'</div>');
 
